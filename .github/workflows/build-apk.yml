@@ -8,6 +8,7 @@ on:
       - 'lib/**'
       - 'android/**'
       - 'pubspec.yaml'
+      - 'pubspec.lock'
       - '.github/workflows/build-apk.yml'
 
 permissions:
@@ -36,10 +37,23 @@ jobs:
       - name: Instalar dependencias
         run: flutter pub get
 
+      - name: Diagnosticar Android antigo
+        run: |
+          echo "=== Versao do Flutter ==="
+          flutter --version
+          echo "=== Arquivos MainActivity ==="
+          find android -type f -name '*MainActivity*' -print
+          echo "=== Referencias ao embedding antigo ==="
+          grep -RInE \
+            'io\.flutter\.app|PluginRegistry\.Registrar|FlutterApplication' \
+            android lib "$HOME/.pub-cache/hosted/pub.dev" \
+            --exclude-dir=.git || true
+
       - name: Compilar APK
-        run: flutter build apk --release
+        run: flutter build apk --release -v
 
       - name: Disponibilizar APK para download
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Next-IPTV-APK
