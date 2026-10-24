@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configurar Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -34,33 +34,21 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Regenerar estrutura Android
+        run: flutter create --platforms=android --org com.next --project-name next_iptv --overwrite .
+
       - name: Instalar dependencias
         run: flutter pub get
 
       - name: Verificar Manifest Android
         run: |
-          echo "=== Diretorio do projeto ==="
-          pwd
-
-          echo "=== Versao do Flutter ==="
-          flutter --version
-
           echo "=== Manifest Android ==="
-          if [ -f android/app/src/main/AndroidManifest.xml ]; then
-            cat android/app/src/main/AndroidManifest.xml
-          else
-            echo "ERRO: AndroidManifest.xml nao encontrado"
-            exit 1
-          fi
-
+          cat android/app/src/main/AndroidManifest.xml
           echo "=== Referencias ao embedding antigo ==="
           grep -RInE \
             'io\.flutter\.app|PluginRegistry\.Registrar|FlutterApplication' \
             android lib "$HOME/.pub-cache/hosted/pub.dev" \
             --exclude-dir=.git || true
-
-          echo "=== Arquivos MainActivity ==="
-          find android -type f \( -name '*MainActivity.kt' -o -name '*MainActivity.java' \) -print
 
       - name: Compilar APK
         run: flutter build apk --release -v
