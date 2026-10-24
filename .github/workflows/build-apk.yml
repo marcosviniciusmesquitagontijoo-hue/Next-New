@@ -34,16 +34,23 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Regenerar estrutura Android
-        run: flutter create --platforms=android --org com.next --project-name next_iptv --overwrite .
+      - name: Criar arquivos Android ausentes
+        run: flutter create --platforms=android --org com.next --project-name next_iptv .
 
       - name: Instalar dependencias
         run: flutter pub get
 
-      - name: Verificar Manifest Android
+      - name: Verificar estrutura Android
         run: |
+          echo "=== Arquivos Gradle ==="
+          find android -maxdepth 3 -type f \( -name 'build.gradle' -o -name 'build.gradle.kts' -o -name 'settings.gradle' -o -name 'settings.gradle.kts' \) -print
+
           echo "=== Manifest Android ==="
           cat android/app/src/main/AndroidManifest.xml
+
+          echo "=== MainActivity ==="
+          find android -type f \( -name 'MainActivity.kt' -o -name 'MainActivity.java' \) -exec sh -c 'echo "=== $1 ==="; cat "$1"' _ {} \;
+
           echo "=== Referencias ao embedding antigo ==="
           grep -RInE \
             'io\.flutter\.app|PluginRegistry\.Registrar|FlutterApplication' \
