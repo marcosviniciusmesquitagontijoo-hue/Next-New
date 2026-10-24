@@ -41,8 +41,10 @@ jobs:
         run: |
           echo "=== Diretorio do projeto ==="
           pwd
+
           echo "=== Versao do Flutter ==="
           flutter --version
+
           echo "=== Manifest Android ==="
           if [ -f android/app/src/main/AndroidManifest.xml ]; then
             cat android/app/src/main/AndroidManifest.xml
@@ -50,15 +52,15 @@ jobs:
             echo "ERRO: AndroidManifest.xml nao encontrado"
             exit 1
           fi
-          echo "=== Verificar embedding v2 ==="
-          grep -n 'flutterEmbedding\|FlutterApplication' android/app/src/main/AndroidManifest.xml || true
-          echo "=== Arquivos MainActivity ==="
-          find android -type f -name '*MainActivity*' -print
+
           echo "=== Referencias ao embedding antigo ==="
           grep -RInE \
             'io\.flutter\.app|PluginRegistry\.Registrar|FlutterApplication' \
             android lib "$HOME/.pub-cache/hosted/pub.dev" \
             --exclude-dir=.git || true
+
+          echo "=== Arquivos MainActivity ==="
+          find android -type f \( -name '*MainActivity.kt' -o -name '*MainActivity.java' \) -print
 
       - name: Compilar APK
         run: flutter build apk --release -v
